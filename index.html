@@ -1,19 +1,131 @@
 <!doctype html>
 <html lang="en">
   <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta
-      name="description"
-      content="Polypost — draft once and format your post for LinkedIn, X, Bluesky, Threads, Facebook, and Instagram, with each platform's length and formatting limits applied live."
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+    <meta name="description" content="Low Poly Drive — a 3D low-poly driving game with 14 hand-built vehicles." />
+    <meta name="theme-color" content="#12161d" />
+    <link
+      rel="icon"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%2312161d'/%3E%3Cpath d='M5 20h22l-2-5-4-3H11l-4 3z' fill='%23ffb02e'/%3E%3Ccircle cx='10' cy='21' r='3' fill='%23eef2f7'/%3E%3Ccircle cx='22' cy='21' r='3' fill='%23eef2f7'/%3E%3C/svg%3E"
     />
-    <link rel="icon" type="image/svg+xml" href="%BASE_URL%favicon.svg" />
-    <link rel="apple-touch-icon" href="%BASE_URL%apple-touch-icon-180x180.png" />
-    <meta name="theme-color" content="#6366f1" />
-    <title>Polypost — multi-platform post editor</title>
+    <title>Low Poly Drive</title>
   </head>
   <body>
-    <div id="root"></div>
-    <script type="module" src="/src/main.tsx"></script>
+    <canvas id="game"></canvas>
+
+    <!-- ===================== HUD ===================== -->
+    <div id="hud" class="hidden">
+      <div class="hud-top">
+        <div class="chip" id="hud-objective">
+          <span class="chip-label">OBJECTIVE</span>
+          <span class="chip-value" id="objective-value">Finish 3 laps</span>
+        </div>
+        <div class="hud-timers">
+          <div class="timer-box">
+            <span class="timer-label">LAP</span>
+            <span class="timer-value" id="lap-time">0:00.00</span>
+          </div>
+          <div class="timer-box">
+            <span class="timer-label">BEST</span>
+            <span class="timer-value" id="best-time">--:--.--</span>
+          </div>
+          <div class="timer-box">
+            <span class="timer-label">TOTAL</span>
+            <span class="timer-value" id="total-time">0:00.00</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="hud-bottom">
+        <div class="hud-left">
+          <div class="speedo">
+            <span class="speed-value" id="speed-value">0</span>
+            <span class="speed-unit">KM/H</span>
+          </div>
+          <div class="boost-bar" title="Nitro (Shift)">
+            <div class="boost-fill" id="boost-fill"></div>
+          </div>
+          <div class="gear-strip" id="gear-strip"></div>
+        </div>
+
+        <div class="hud-right">
+          <canvas id="minimap" width="180" height="180"></canvas>
+          <div class="standings" id="standings"></div>
+        </div>
+      </div>
+
+      <div class="hud-center-msg hidden" id="center-msg"></div>
+    </div>
+
+    <!-- ===================== TITLE ===================== -->
+    <div id="title-screen" class="screen">
+      <div class="title-inner">
+        <h1 class="logo">LOW&nbsp;POLY<span>DRIVE</span></h1>
+        <p class="tagline">14 low-poly vehicles. One low-poly city. Go.</p>
+        <div class="mode-buttons">
+          <button class="btn btn-primary" id="btn-race">Circuit Race</button>
+          <button class="btn" id="btn-freeroam">Free Roam</button>
+        </div>
+        <button class="btn btn-ghost" id="btn-garage">Garage</button>
+        <a class="btn btn-ghost" href="./gallery.html">Model Gallery</a>
+        <div class="controls-hint">
+          <span><b>W A S D</b> / <b>↑ ← ↓ →</b> drive</span>
+          <span><b>SPACE</b> handbrake</span>
+          <span><b>SHIFT</b> nitro</span>
+          <span><b>C</b> camera</span>
+          <span><b>R</b> reset</span>
+          <span><b>ESC</b> pause</span>
+        </div>
+      </div>
+      <div class="loading-note" id="loading-note">Building the city…</div>
+    </div>
+
+    <!-- ===================== GARAGE ===================== -->
+    <div id="garage-screen" class="screen hidden">
+      <div class="garage-head">
+        <h2>Garage</h2>
+        <p id="garage-blurb">Pick your ride.</p>
+      </div>
+      <div class="garage-body">
+        <div class="garage-grid" id="garage-grid"></div>
+        <aside class="spec-panel">
+          <h3 id="spec-name">—</h3>
+          <p class="spec-blurb" id="spec-blurb"></p>
+          <div class="spec-bars" id="spec-bars"></div>
+          <div class="garage-actions">
+            <button class="btn btn-primary" id="btn-drive">Drive</button>
+            <button class="btn btn-ghost" id="btn-back-title">Back</button>
+          </div>
+        </aside>
+      </div>
+    </div>
+
+    <!-- ===================== RESULTS ===================== -->
+    <div id="results-screen" class="screen hidden">
+      <div class="results-card">
+        <h2 id="results-title">Race complete</h2>
+        <div id="results-body"></div>
+        <div class="results-actions">
+          <button class="btn btn-primary" id="btn-retry">Race again</button>
+          <button class="btn btn-ghost" id="btn-to-garage">Garage</button>
+          <button class="btn btn-ghost" id="btn-to-title">Main menu</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===================== PAUSE ===================== -->
+    <div id="pause-screen" class="screen hidden">
+      <div class="results-card">
+        <h2>Paused</h2>
+        <div class="results-actions">
+          <button class="btn btn-primary" id="btn-resume">Resume</button>
+          <button class="btn btn-ghost" id="btn-restart">Restart</button>
+          <button class="btn btn-ghost" id="btn-quit">Main menu</button>
+        </div>
+      </div>
+    </div>
+
+    <script type="module" src="/src/main.ts"></script>
   </body>
 </html>

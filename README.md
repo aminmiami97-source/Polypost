@@ -1,133 +1,118 @@
-# Polypost
+# Low Poly Drive
 
-Draft a post once and format it for every platform at the same time. The main editor uses TipTap for word-processor-style editing, and a live preview rail shows your post on **LinkedIn, X, Bluesky, Threads, Mastodon, Facebook, and Instagram**, each with its own character limit, counting rule, and formatting applied.
+A 3D low-poly driving game that runs in the browser. Race a circuit around a
+low-poly city in one of **14 hand-built vehicles** (9 cars and 5 mopeds), or
+roam free collecting delivery crates.
 
-It ships in two forms:
+Built with Three.js + TypeScript + Vite. Every vehicle model is generated
+procedurally and exported as a GLB, so the whole game is a static site — no
+server, no assets pipeline at runtime.
 
-- **Web app** — the multi-platform editor. Live at https://aka.ms/Polypost
-- **LinkedIn browser extension** — a LinkedIn-only companion that turns LinkedIn's own composer into the editor: **Start a post** opens it in place of the native box, and **Post** publishes through LinkedIn's own flow. See [LinkedIn browser extension](#linkedin-browser-extension).
-
-<p align="center">
-  <img src="docs/screenshot.png" alt="Polypost screenshot" width="480">
-</p>
-
-This is not an official app of any platform. Drafts stay in your browser; the extension only acts on LinkedIn when you click Post.
-
-## Using it
-
-- **Write once, preview everywhere.** Type in the main editor with a live word count and toggle the platforms you care about with the chips; each enabled platform shows a live preview card with its character count and any warnings. During AI review, the word count follows the reviewed result, including your edits and decisions, rather than counting removed text.
-- **Tailor per platform.** Edit inside a card to *fork* a platform-specific version (it gets a Customized badge), and re-sync to the main draft any time. Newlines map 1:1 like LinkedIn's composer — Enter for a new line, again for a blank line.
-- **Keep the detail in a thread.** X, Bluesky, and Threads each have an independent **Split into a thread** toggle, off by default. The toggle cannot be enabled when the full platform-specific edit or main draft fits in one post, using the platform's character-counting rules rather than an AI-shortened version. Existing threads remain switchable off. Turning it on immediately asks configured AI to adapt the full platform-specific edit or main draft, never an AI-shortened version, without a total character or word target. The complete response is then split into posts; without AI, the full source is split locally. Splitting prefers paragraph, sentence, and word boundaries, keeps URLs and emoji intact, and always reserves space for `1/N` numbering. Automatic threads follow finalized source changes after the standard three-second idle delay, even with auto-fit off. Editing or removing posts marks the thread as customized and protects it from automatic replacement. The card's AI sparkle explicitly regenerates the full thread. Previously saved threads remain protected and are now always numbered. Turning the toggle off returns to single-post fitting and saves a recovery checkpoint before removing customized posts; **Re-sync** discards the thread after confirmation.
-- **Publish threads one post at a time.** Threads show one editable card at a time. Previous/next arrows cycle through the posts and wrap around to the first or last card, with the navigation showing your position and the total. Each segment has its own platform-aware character count, **Copy post**, and **Copy & open** buttons. A successful per-post copy automatically advances to the next card, wrapping back to the first after the last; a failed copy stays on the current card. **Copy & open** copies the selected segment including its numbering and opens that platform's composer, prefilling text where supported; it does not automatically link the post as a reply. If opening fails after copying succeeds, the card still advances and the error remains visible. Oversized URLs and over-limit edits are flagged, never truncated. If AI hits its output limit, its incomplete response is rejected rather than applied. Publish later segments manually as replies to the previous one; Polypost does not automatically publish or link a thread. The shared image can be copied separately for the post you choose.
-- **Copy or open.** Use **Copy** for platform-ready text, or **Copy & open** to launch that platform's composer pre-filled (X, Bluesky, Threads, Mastodon).
-- **Mention people.** Write `@[Name]` — it shows as `@Scott Hanselman` on LinkedIn (where the extension resolves it into a real, clickable mention) and collapses to a single handle-style token like `@ScottHanselman` on X, Bluesky, Threads, and Mastodon, so their autocomplete fires on the whole name (and can match a handle) instead of splitting it at the space.
-- **Add media & links once.** Use the **Images & links** tray to reuse an image or link across platforms: links fold into each platform's text and count, and an image can be copied to the clipboard to paste into LinkedIn (or downloaded / dragged into any composer).
-- **Optional AI.** Connect your own LLM key (Anthropic Claude, Google Gemini, or any OpenAI-compatible endpoint) to write, adapt, and auto-fit posts — with documents or URLs as reference context. Your key stays in your browser.
-- **Review and edit in place.** Tracked changes appear only in the main draft: additions are underlined and removals are struck through. Left- or right-click a change to open its Accept/Reject menu (keyboard: focus a change and press Enter or Shift+F10). Edit text directly in the review, and the final decision applies your reviewed draft automatically. **Accept All / Reject All** resolve the remaining changes while keeping decisions already made. Initial drafts start unmarked and apply automatically. AI instructions generate after a three-second typing pause (Enter submits immediately), with a subtle pulsing icon while working. Platform adaptations update automatically without review markup. Review uses Markdown to preserve formatting and mention tokens. Copied main-draft output stays unchanged until review finishes. Mechanically truncated suggestions are flagged. Recovery history retains versions before and after acceptance.
-- **Keep a draft library.** **Save draft** creates a named entry; after saving or restoring an entry, **Update draft** updates it in place. Search finds text in the master and platform variants. Named drafts use IndexedDB without the previous ten-draft cap; existing saved drafts migrate automatically, with their legacy copy left intact. The LinkedIn extension keeps its existing ten-draft history on LinkedIn's separate origin.
-- **Finalize before updating previews.** Platform previews stay unchanged while AI writes and you review changes. Once every change is accepted or rejected, previews refresh and automatic adaptation resumes after the standard three-second idle delay.
-- **Preview the reviewed result.** Toggle **View changes applied** to hide review markup without resolving changes. Toggle it off to return to tracked changes; edits and prior decisions are preserved.
-- **Recover and back up work.** The web app autosaves accepted AI variants and threads across reloads and keeps the latest 20 recovery checkpoints after 10 seconds of inactivity and before replacing content. Checkpoints include variants, thread text/order/numbering, sources, and attached media. **Export backup** downloads the library and current workspace as JSON; **Import backup** validates and adds entries without replacing local drafts or the editor. Backups include attachment data but **never AI settings or API keys**. Keep backups outside your browser: clearing site data also clears local drafts.
-- **Install it as an app.** The web app is a PWA: install it from the **Install app** button in the header (or your browser's install option) to run it in its own window and add it to your home screen or desktop. Once loaded it works **offline** for writing, editing, and managing drafts (AI and link previews still need the network), and prompts you to reload when a new version is published.
+**Play it:** <https://aminmiami97-source.github.io/low-poly-drive/>
 
 ## Features
 
-- **Live multi-platform previews** with each platform's character limit, counting rule, formatting, and warnings — LinkedIn, X, Bluesky, Threads, Mastodon, Facebook, and Instagram.
-- **Fork-on-edit** per platform with one-click re-sync, plus local autosave, an updateable/searchable draft library, recovery history, and portable backups.
-- **Editable threads for X, Bluesky, and Threads**, with boundary-aware splitting, compact card navigation, automatic numbering, per-post counts/copy/open, and full draft-library support.
-- **`@[Name]` mentions**, highlighted in the editor and previews — kept spaced for LinkedIn (where the extension resolves them into real, clickable mentions) and collapsed to a single handle-style token elsewhere.
-- **Shared images & links** — add once, reuse everywhere; *Copy image* pastes a picture straight into LinkedIn.
-- **Optional, bring-your-own-key AI** — reviewable and reversible writing/adaptation suggestions, automatic fit suggestions, and reference sources (files, URLs, or pasted text), with a multiline prompt box and remembered prompt history.
-- **Rich-text editing** — Markdown and Word paste, file import, a searchable emoji picker, lists, and links, with LinkedIn-style Unicode styling where it helps. Unicode bullet lists from AI replies or pasted text retain separate lines in previews and copied output.
-- **Private by default** — drafts, settings, and API keys stay in your browser; nothing leaves it except the AI endpoint you choose to configure.
-- **Installable PWA** — add it to your home screen or desktop and launch it in its own window; the app shell is cached so editing and drafts work offline, attachments are kept on-device, and a reload prompt appears when a new version ships.
+- **14 low-poly vehicles** — 9 cars (coupe, sedan, compact, SUV, pickup, muscle
+  car, supercar, van, taxi) and 5 mopeds (scooter, retro moped, dirt bike,
+  café racer, delivery moped). Each has its own silhouette, colour and driving
+  characteristics.
+- **Two modes** — a 3-lap circuit race against 5 AI rivals with live standings
+  and lap timing, or free roam collecting 12 crates.
+- **Arcade driving model** — separate longitudinal and lateral velocity, so
+  the cars understeer, drift and slide; handbrake, nitrous boost and a
+  speed-reactive chase camera.
+- **A city worth driving** — 810 m circuit, kerbs, traffic to dodge, cones to
+  scatter, street lamps, park blocks and distant hills.
+- **Garage** — browse all 14 vehicles on a turntable with stat bars.
+- **Model gallery** — a separate page (`gallery.html`) that displays every
+  exported model, useful for inspecting the low-poly work.
+- **Adaptive quality** — the renderer drops shadows and resolution if the
+  frame rate drops, and scales back up when it recovers.
 
-## Local Development
+## Controls
+
+| Key | Action |
+| --- | --- |
+| `W` / `↑` | Throttle |
+| `S` / `↓` | Brake / reverse |
+| `A` `D` / `←` `→` | Steer |
+| `Space` | Handbrake (drift) |
+| `Shift` | Nitrous boost |
+| `C` | Cycle camera (chase / bonnet / wide) |
+| `R` | Reset to the track |
+| `Esc` | Pause |
+
+Touch controls appear automatically on touch devices.
+
+## Running locally
 
 ```bash
 npm install
-npm run dev
+npm run dev        # dev server on http://localhost:5173
+npm run build      # regenerate models + typecheck + production bundle
+npm run preview    # serve the production build
 ```
 
-Run tests:
+## The vehicle models
+
+Models are **not** hand-modelled in a DCC tool — they are generated from
+parametric recipes so the whole set stays consistent and is reproducible:
 
 ```bash
-npm test
+npm run models     # writes public/models/*.glb
 ```
 
-Build the web app for production:
+`tools/build-models.mjs` builds each vehicle from an extruded side profile plus
+primitive parts (wheels, lights, bumpers, racks, cargo boxes), then exports one
+binary GLB per vehicle with `GLTFExporter`. The generator validates every mesh
+for non-finite vertex data before writing.
+
+Runtime contract between the generator and the game:
+
+- node names `wheel_fl` / `wheel_fr` / `wheel_rl` / `wheel_rr` (cars) and
+  `wheel_f` / `wheel_r` (mopeds) are used to steer and spin the wheels;
+- materials are named `paint`, `glass`, `tyre`, `rim`, `light`, `trim` so the
+  paint colour can be swapped at runtime.
+
+## Project layout
+
+```
+src/
+  main.ts              game bootstrap, state machine, game loop
+  gallery.ts           model gallery page
+  game/
+    catalog.ts         vehicle catalogue (stats + model references)
+    cityLayout.ts      deterministic city generation
+  sim/                 pure simulation, no rendering
+    track.ts           circuit spline, arc-length lookup, projection
+    vehicle.ts         arcade vehicle dynamics
+    world.ts           buildings, traffic, cones, collision solver
+    race.ts            laps, checkpoints, rival AI, standings
+  render/
+    stage.ts           renderer, lighting, gradient sky, adaptive quality
+    worldRenderer.ts   ground, tarmac, kerbs, city blocks, props
+    vehicleModel.ts    GLB loading, wheel animation, paint
+    chaseCamera.ts     camera rig
+  ui/                  DOM HUD and screens
+tools/
+  build-models.mjs     procedural low-poly model generator
+  playtest.py          headless browser screenshots + smoke test
+  gametest.py          deterministic gameplay validation (autopilot lap runs)
+```
+
+## Tests
 
 ```bash
 npm run build
+npx vite preview --port 4173 &
+python3 tools/gametest.py     # autopilot races a full lap, checks all 14 vehicles
+python3 tools/playtest.py     # screenshots + console-error check
 ```
 
-Preview the production build locally:
+`gametest.py` drives the simulation directly (no renderer dependency) with a
+pure-pursuit autopilot and asserts that laps complete, lap times are recorded,
+every vehicle accelerates and no JavaScript errors are raised.
 
-```bash
-npm run preview
-```
+## Licence
 
-### Progressive Web App (PWA)
-
-`npm run build` also emits the service worker and web app manifest via [`vite-plugin-pwa`](https://vite-pwa-org.netlify.app/), making the app installable and offline-capable. PWA features (install prompt, offline caching, the update toast) are only active in the **built** app — `npm run dev` does not register a service worker — so use `npm run preview` (or the deployed site) to exercise them.
-
-The PWA icons in `public/` (`pwa-*.png`, `maskable-icon-512x512.png`, `apple-touch-icon-180x180.png`) are rendered from `public/favicon.svg`. Regenerate them after changing the source art with:
-
-```bash
-npm run generate:icons
-```
-
-## LinkedIn browser extension
-
-The extension is **LinkedIn-only** — it runs on, and posts to, LinkedIn and nowhere else. It turns LinkedIn's composer into the editor: clicking **Start a post** on LinkedIn opens the rich-text editor in place of the native post box. When you click **Post**, it exports LinkedIn-ready Unicode text (resolving `@[Name]` mentions through LinkedIn's typeahead into real, clickable mentions), writes it into LinkedIn's native composer behind the scenes, and clicks LinkedIn's own **Post** button. The native composer stays hidden throughout, so it feels like you are posting directly from the editor.
-
-### How it works
-
-- A content script (`src/extension/content-script.tsx`) runs on `linkedin.com`, mounts the formatter UI, and listens for clicks on LinkedIn's **Start a post** control.
-- LinkedIn renders its composer inside a **shadow root**, so the script pierces shadow boundaries to find the composer, suppress it (CSS `visibility:hidden` while you edit, so its focus trap cannot steal focus from the formatter), and drive it.
-- On **Post**, the script briefly makes the hidden composer focusable, hands any attached images/videos to LinkedIn's media upload input (confirming the media editor's **Next** step), inserts the exported text (resolving `@[Name]` mention tokens through the composer's mention typeahead), waits for LinkedIn's link preview card when the text contains a URL, waits for LinkedIn's Post button to enable, clicks it, and confirms the composer closed.
-- A service worker (`src/extension/public/background.js`) re-injects the script if you click the toolbar icon on a LinkedIn tab.
-
-### Permissions
-
-- `host_permissions` for `*.linkedin.com` — the extension only runs on LinkedIn.
-- `clipboardWrite` — the **Copy for LinkedIn** button.
-- `scripting` — re-inject the formatter when the toolbar icon is clicked.
-
-No analytics, no remote servers, no `chrome.storage` — drafts are kept in the page's `localStorage`.
-
-### Build and load unpacked (for development)
-
-```bash
-npm run build:extension
-```
-
-Then load `dist-extension` as an unpacked extension from `chrome://extensions` or `edge://extensions` (enable Developer mode first). Do **not** load `src/extension`; only `dist-extension` contains the built `content-script.js`, `style.css`, `manifest.json`, and icons the browser runs.
-
-After rebuilding, click **Reload** on the extension card, then reload any open LinkedIn tab (the content script injects its CSS on page load, so an extension reload alone keeps the old styles). If the extension is enabled but no formatter appears, remove the unpacked extension and load `dist-extension` again.
-
-### Package for the Chrome Web Store
-
-```bash
-npm run package:extension
-```
-
-This builds the extension and writes `release/linkedin-post-formatter-v<version>.zip` with `manifest.json` at the archive root, ready to upload.
-
-### Regenerate icons
-
-The extension icons (`src/extension/public/icons/icon-{16,48,128}.png`) are rendered from `public/favicon.svg`. To regenerate them after changing the source art, run a Chromium browser with remote debugging on port 9222 and:
-
-```bash
-node scripts/generate-extension-icons.mjs
-```
-
-## GitHub Pages Deployment
-
-The workflow in `.github/workflows/pages.yml` builds the app and deploys `dist` to GitHub Pages on pushes to `main`.
-
-In the repository settings, set Pages source to **GitHub Actions**. The workflow passes `VITE_BASE_PATH` as `/${{ github.event.repository.name }}/`, which matches the standard project Pages URL path. For a custom domain, set `VITE_BASE_PATH` to `/` in the workflow.
-
-## License
-
-MIT. See [LICENSE](LICENSE).
+MIT — see [LICENSE](LICENSE).
